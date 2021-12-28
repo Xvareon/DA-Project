@@ -272,5 +272,5 @@ if __name__ == "__main__":
     f_implicit = ImplicitCollaborativeRecommender(train_location)
     # df_sim = f_implicit.similar_items(['Dota 2', 'xxxxx', 'Fallout 4', 'Left 4 Dead 2'], 20)
     df_rec = f_implicit.recommend(list_users, 20)
-    df_rec.to_csv(r'././data/output_data/Collaborative_recommender_als_output.csv',
-                  index=False)
+    df_rec.to_csv(
+        r'././data/output_data/Collaborative_recommender_als_output.csv', index=False)

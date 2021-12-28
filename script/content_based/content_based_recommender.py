@@ -4,7 +4,7 @@ import pathlib
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-n_recommendation = 20
+n_recommendation = 3
 
 # Get games data from CSV
 locationGamesFile = pathlib.Path(
@@ -14,6 +14,8 @@ dataGames = read_csv(locationGamesFile)
 # Get users data from CSV
 locationUsersFile = pathlib.Path(
     r'././data/model_data/steam_user_train.csv')   # data/purchase_play
+# locationUsersFile = pathlib.Path(
+#     r'././data/model_data/testing.csv')
 dataUsers = read_csv(locationUsersFile)
 
 # get review info from csv
