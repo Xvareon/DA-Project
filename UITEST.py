@@ -10,6 +10,10 @@ import pathlib
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+import xlsxwriter
+from openpyxl import *
+import tkinter as tk
+
 
 class recommend:
 
@@ -35,6 +39,12 @@ class recommend:
                                     fg='Red')
 
         # Buttons
+        self.input_button = Button(self.f,
+                                   text='Input',
+                                   font=('Arial', 14),
+                                   bg='Orange',
+                                   fg='Black',
+                                   command=self.user_input)
         self.convert_button = Button(self.f,
                                      text='Recommend',
                                      font=('Arial', 14),
@@ -57,27 +67,128 @@ class recommend:
         # Placing the widgets using grid manager
         self.message_label.grid(row=1, column=1)
         self.message_label2.grid(row=2, column=1)
-        self.convert_button.grid(row=3, column=0,
+        self.input_button.grid(row=3, column=0,
+                               padx=0, pady=15)
+        self.convert_button.grid(row=3, column=1,
                                  padx=0, pady=15)
-        self.display_button.grid(row=3, column=1,
+        self.display_button.grid(row=3, column=2,
                                  padx=10, pady=15)
-        self.exit_button.grid(row=3, column=2,
+        self.exit_button.grid(row=3, column=3,
                               padx=10, pady=15)
+    #######################################################################################
+
+    def user_input(self):
+        # 1 user id
+        # 2 game name
+        # 3 hours played
+        # 4 purchase
+        # 5 play
+        def new_entry():
+            new_line = sheet.max_row + 1
+            sheet.cell(column=1, row=new_line, value=float(txtfld_1.get()))
+            sheet.cell(column=2, row=new_line, value=txtfld_2.get())
+            sheet.cell(column=3, row=new_line, value=float(txtfld_3.get()))
+            sheet.cell(column=4, row=new_line, value=float(txtfld_4.get()))
+            sheet.cell(column=5, row=new_line, value=float(txtfld_5.get()))
+            workbook.save(filename="././data/model_data/testing2.xlsx")
+            read_file = pd.read_excel("././data/model_data/testing2.xlsx")
+            read_file.to_csv("././data/model_data/testing2.csv",
+                             index=None, header=True)
+
+        def close_window():
+            window.destroy()
+
+        try:
+            workbook = load_workbook(
+                filename="././data/model_data/testing2.csv")
+            sheet = workbook.active
+        except:
+            workbook = Workbook()
+            sheet = workbook.active
+
+            sheet["A1"] = "user_id"
+            sheet["B1"] = "game_name"
+            sheet["C1"] = "hours"
+            sheet["D1"] = "purchase"
+            sheet["E1"] = "play"
+
+        window = tk.Tk()
+
+        window.title('Game Recommendation Window')
+        window.geometry("1000x500")
+
+        btn_exit = tk.Button(window, text="Exit",
+                             fg='black', command=close_window)
+        btn_exit.place(x=800, y=400)
+
+        lbl_0 = tk.Label(window, text="Game Recommendation Entry",
+                         fg='black', font=("Helvetica", 8))
+        lbl_0.place(x=200, y=15)
+
+        lbl_1 = tk.Label(window, text="User ID",
+                         fg='black', font=("Helvetica", 8))
+        lbl_1.place(x=20, y=50)
+
+        lbl_2 = tk.Label(window, text="Game Name",
+                         fg='black', font=("Helvetica", 8))
+        lbl_2.place(x=20, y=75)
+
+        lbl_3 = tk.Label(window, text="Hours Played",
+                         fg='black', font=("Helvetica", 8))
+        lbl_3.place(x=20, y=100)
+
+        lbl_4 = tk.Label(window, text="Purchase",
+                         fg='black', font=("Helvetica", 8))
+        lbl_4.place(x=20, y=125)
+
+        lbl_5 = tk.Label(window, text="Play",
+                         fg='black', font=("Helvetica", 8))
+        lbl_5.place(x=20, y=150)
+
+        txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
+        txtfld_1.place(x=350, y=50)
+
+        txtfld_2 = tk.Entry(window, bg='white', fg='black', bd=5)
+        txtfld_2.place(x=350, y=75)
+
+        txtfld_3 = tk.Entry(window, bg='white', fg='black', bd=5)
+        txtfld_3.place(x=350, y=100)
+
+        txtfld_4 = tk.Entry(window, bg='white', fg='black', bd=5)
+        txtfld_4.place(x=350, y=125)
+
+        txtfld_5 = tk.Entry(window, bg='white', fg='black', bd=5)
+        txtfld_5.place(x=350, y=150)
+
+        btn = tk.Button(window, text="Save Entry",
+                        fg='black', command=new_entry)
+        btn.place(x=400, y=400)
+
+        workbook.save(filename="././data/model_data/testing2.xlsx")
+        read_file = pd.read_excel("././data/model_data/testing2.xlsx")
+        read_file.to_csv("././data/model_data/testing2.csv",
+                         index=None, header=True)
+
+        window.mainloop()
+        #######################################################################################
 
     def recommend_csv(self):
 
-        n_recommendation = 3
+        n_recommendation = 10
 
         # Get games data from CSV
+        # locationGamesFile = pathlib.Path(
+        #     r'././data/intermediate_data/processed_games_for_content-based.csv')
+        # dataGames = read_csv(locationGamesFile)
         locationGamesFile = pathlib.Path(
-            r'././data/intermediate_data/processed_games_for_content-based.csv')
+            r'././data/intermediate_data/steam_games.csv')
         dataGames = read_csv(locationGamesFile)
 
         # Get users data from CSV
         # locationUsersFile = pathlib.Path(
         #     r'././data/model_data/steam_user_train.csv')   # data/purchase_play
         locationUsersFile = pathlib.Path(
-            r'././data/model_data/testing.csv')
+            r'././data/model_data/testing2.csv')
         dataUsers = read_csv(locationUsersFile)
 
         # get review info from csv
@@ -97,6 +208,7 @@ class recommend:
         col_names = list(map(str, range(1, n_recommendation + 1)))
         col_names = ["user_id"] + col_names
 
+        #######################################################################################
         # Function that takes in game name and Cosine Similarity matrix as input and outputs most similar games
 
         def get_recommendations(title, cosine_sim):
@@ -126,6 +238,7 @@ class recommend:
 
             # Return the top most similar games
             return dataGames['name'].iloc[movie_indices].tolist()
+        #######################################################################################
 
         def make_recommendation_for_user(user_id, game_list, game_user_have):
             if type(game_list) is not list or len(game_list) == 0:
@@ -147,6 +260,7 @@ class recommend:
             else:
                 return DataFrame(data=[[user_id] + recommendation_reviews["name"].tolist()[0:n_recommendation]],
                                  columns=col_names)
+        #######################################################################################
 
         def generate_recommendation_output(column_name, location_output_file):
             recommendationByUserData = DataFrame(columns=col_names)
@@ -183,13 +297,14 @@ class recommend:
             recommendationByUserData.to_csv(location_output_file, index=False)
 
         generate_recommendation_output('genre',
-                                       pathlib.Path(r'././data/output_data/content_based_recommender_ELMOoutput_genre.csv'))
+                                       pathlib.Path(r'././data/output_data/content_based_recommender_MARKoutput_genre.csv'))
         msg.showinfo('HELLO!', 'Recommendations Processed')
+    #######################################################################################
 
     def display_xls_file(self):
         try:
             self.file_name = pathlib.Path(
-                r'././data/output_data/content_based_recommender_ELMOoutput_genre.csv')
+                r'././data/output_data/content_based_recommender_MARKoutput_genre.csv')
 
             df = pd.read_csv(self.file_name)
 
@@ -210,6 +325,7 @@ class recommend:
             msg.showerror('Error in opening file', e)
 
 
+#######################################################################################
 # Driver Code
 root = Tk()
 root.title('Game Recommendation')
