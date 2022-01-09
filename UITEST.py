@@ -14,7 +14,7 @@ import xlsxwriter
 from openpyxl import *
 import tkinter as tk
 
-
+userGames = []
 class recommend:
 
     def __init__(self, root):
@@ -77,97 +77,55 @@ class recommend:
                               padx=10, pady=15)
     #######################################################################################
 
+  
+  
     def user_input(self):
-        # 1 user id
-        # 2 game name
-        # 3 hours played
-        # 4 purchase
-        # 5 play
-        def new_entry():
-            new_line = sheet.max_row + 1
-            sheet.cell(column=1, row=new_line, value=float(txtfld_1.get()))
-            sheet.cell(column=2, row=new_line, value=txtfld_2.get())
-            sheet.cell(column=3, row=new_line, value=float(txtfld_3.get()))
-            sheet.cell(column=4, row=new_line, value=float(txtfld_4.get()))
-            sheet.cell(column=5, row=new_line, value=float(txtfld_5.get()))
-            workbook.save(filename="././data/model_data/testing2.xlsx")
-            read_file = pd.read_excel("././data/model_data/testing2.xlsx")
-            read_file.to_csv("././data/model_data/testing2.csv",
-                             index=None, header=True)
+        userInput =[]
 
         def close_window():
             window.destroy()
 
-        try:
-            workbook = load_workbook(
-                filename="././data/model_data/testing2.csv")
-            sheet = workbook.active
-        except:
-            workbook = Workbook()
-            sheet = workbook.active
+        def new_entry():
+            for games in userGames:
+                userGames.append(games.get())
 
-            sheet["A1"] = "user_id"
-            sheet["B1"] = "game_name"
-            sheet["C1"] = "hours"
-            sheet["D1"] = "purchase"
-            sheet["E1"] = "play"
-
+        #  New window for input
         window = tk.Tk()
-
         window.title('Game Recommendation Window')
         window.geometry("1000x500")
 
+        # TITLE
+        lbl_0 = tk.Label(window, text="Game Recommendation Entry",
+                         fg='black', font=("Helvetica", 8))
+        lbl_0.place(x=200, y=15)
+        
+
+        # EXIT BUTTON
         btn_exit = tk.Button(window, text="Exit",
                              fg='black', command=close_window)
         btn_exit.place(x=800, y=400)
 
-        lbl_0 = tk.Label(window, text="Game Recommendation Entry",
-                         fg='black', font=("Helvetica", 8))
-        lbl_0.place(x=200, y=15)
+        for i in range(5):
+            lbl_1 = tk.Label(window, text="Game Name",
+                            fg='black', font=("Helvetica", 8))
+            lbl_1.place(x = 50, y = 75 + i * 25)
 
-        lbl_1 = tk.Label(window, text="User ID",
-                         fg='black', font=("Helvetica", 8))
-        lbl_1.place(x=20, y=50)
-
-        lbl_2 = tk.Label(window, text="Game Name",
-                         fg='black', font=("Helvetica", 8))
-        lbl_2.place(x=20, y=75)
-
-        lbl_3 = tk.Label(window, text="Hours Played",
-                         fg='black', font=("Helvetica", 8))
-        lbl_3.place(x=20, y=100)
-
-        lbl_4 = tk.Label(window, text="Purchase",
-                         fg='black', font=("Helvetica", 8))
-        lbl_4.place(x=20, y=125)
-
-        lbl_5 = tk.Label(window, text="Play",
-                         fg='black', font=("Helvetica", 8))
-        lbl_5.place(x=20, y=150)
-
-        txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
-        txtfld_1.place(x=350, y=50)
-
-        txtfld_2 = tk.Entry(window, bg='white', fg='black', bd=5)
-        txtfld_2.place(x=350, y=75)
-
-        txtfld_3 = tk.Entry(window, bg='white', fg='black', bd=5)
-        txtfld_3.place(x=350, y=100)
-
-        txtfld_4 = tk.Entry(window, bg='white', fg='black', bd=5)
-        txtfld_4.place(x=350, y=125)
-
-        txtfld_5 = tk.Entry(window, bg='white', fg='black', bd=5)
-        txtfld_5.place(x=350, y=150)
-
+            txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
+            txtfld_1.place(x=250, y= 75 + i * 25)
+            userInput.append(txtfld_1)
+        
         btn = tk.Button(window, text="Save Entry",
                         fg='black', command=new_entry)
         btn.place(x=400, y=400)
 
-        workbook.save(filename="././data/model_data/testing2.xlsx")
-        read_file = pd.read_excel("././data/model_data/testing2.xlsx")
-        read_file.to_csv("././data/model_data/testing2.csv",
-                         index=None, header=True)
+        
+
+
+
+        
+        
+
+    
 
         window.mainloop()
         #######################################################################################
@@ -277,24 +235,20 @@ class recommend:
             listGamesUserHas = list()
 
             # loop on all row and get recommendations for user
-            for j, row in dataUsers.iterrows():
-                if previousId != row["user_id"]:
-                    recommendationByUserData = concat([recommendationByUserData,
-                                                       make_recommendation_for_user(previousId, listSuggestion, listGamesUserHas)],
-                                                      ignore_index=True)
-                    previousId = row["user_id"]
-                    listSuggestion = list()
-                    listGamesUserHas = list()
-                listGamesUserHas.extend([row["game_name"]])
+            for game in userGames:
+       
+                listSuggestion = list()
                 listSuggestion.extend(get_recommendations(
-                    row["game_name"], cosine_sim_matrix))
+                    game, cosine_sim_matrix))
 
             # add the last element for the last user
             recommendationByUserData = concat([recommendationByUserData,
-                                               make_recommendation_for_user(previousId, listSuggestion, listGamesUserHas)],
-                                              ignore_index=True)
+                                                make_recommendation_for_user(previousId, listSuggestion, arr)],
+                                                ignore_index=True)
 
             recommendationByUserData.to_csv(location_output_file, index=False)
+
+         
 
         generate_recommendation_output('genre',
                                        pathlib.Path(r'././data/output_data/content_based_recommender_MARKoutput_genre.csv'))
