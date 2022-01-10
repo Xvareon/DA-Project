@@ -14,7 +14,7 @@ import xlsxwriter
 from openpyxl import *
 import tkinter as tk
 
-userGames = []
+userGames = [0,0,0,0,0]
 class recommend:
 
     def __init__(self, root):
@@ -80,14 +80,19 @@ class recommend:
   
   
     def user_input(self):
+        userGames.clear()
         userInput =[]
 
         def close_window():
             window.destroy()
 
         def new_entry():
-            for games in userGames:
-                userGames.append(games.get())
+            i = 0
+            for games in userInput:
+                userGames.insert(i,games.get())
+                i = i+1
+           
+            window.destroy()
 
         #  New window for input
         window = tk.Tk()
@@ -117,16 +122,6 @@ class recommend:
         btn = tk.Button(window, text="Save Entry",
                         fg='black', command=new_entry)
         btn.place(x=400, y=400)
-
-        
-
-
-
-        
-        
-
-    
-
         window.mainloop()
         #######################################################################################
 
@@ -243,7 +238,7 @@ class recommend:
 
             # add the last element for the last user
             recommendationByUserData = concat([recommendationByUserData,
-                                                make_recommendation_for_user(previousId, listSuggestion, arr)],
+                                                make_recommendation_for_user(previousId, listSuggestion, userGames)],
                                                 ignore_index=True)
 
             recommendationByUserData.to_csv(location_output_file, index=False)
