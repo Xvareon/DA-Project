@@ -20,6 +20,8 @@ userGames = [0, 0, 0, 0, 0]
 numOfGames = 1
 userInput1 = []
 userInput = []
+recommendedGames = []
+gamesLbl = []
 class recommend:
 
     def __init__(self, root):
@@ -77,6 +79,13 @@ class recommend:
     #######################################################################################
 
     def user_input(self):
+        self.input_button ["state"] = "disabled"
+        global userInput1
+        global userInput
+        global numOfGames
+        numOfGames = 1
+        userInput = []
+        userInput1 = []
         def recommend_csv():
 
                 n_recommendation = 10
@@ -138,7 +147,7 @@ class recommend:
                     # Get the scores of the most similar games
                     # (not the first one because this games as a score of 1 (perfect score) similarity with itself)
                     x = int(n_recommendation/len(userGames))
-                    print(x)
+                  
                     sim_scores = sim_scores[1:x + 1]
 
                     # Get the games indices
@@ -160,6 +169,15 @@ class recommend:
                         game_user_have)]
                     recommendation_reviews = recommendation_reviews.sort_values(
                         by="percentage_positive_review", ascending=False)
+
+                    global recommendedGames
+                    recommendedGames = []
+                    i = 0
+                    for games in recommendation_reviews["name"]:
+                        recommendedGames.insert(i, games)
+                        i= i+1
+                    print(recommendation_reviews["name"])
+                    print(recommendedGames)
                     
                     if len(recommendation_reviews.index) < n_recommendation:
                         return DataFrame(data=[[user_id] + recommendation_reviews["name"].tolist() +
@@ -191,8 +209,7 @@ class recommend:
                         
                         listSuggestion.extend(get_recommendations(
                             game, cosine_sim_matrix))
-                        print (game)
-                    print (listSuggestion )
+                        
                     # add the last element for the last user
                     recommendationByUserData = concat([recommendationByUserData,
                                                     make_recommendation_for_user(previousId, listSuggestion, userGames)],
@@ -204,6 +221,7 @@ class recommend:
                 generate_recommendation_output('genre',
                                             pathlib.Path(r'././data/output_data/content_based_recommender_MARKoutput_genre.csv'))
                 msg.showinfo('HELLO!', 'Recommendations Processed')
+                self.input_button ["state"] = "normal"
                 window.destroy()
         #######################################################################################
 
@@ -215,6 +233,7 @@ class recommend:
         
         userGames.clear()
         def close_window():
+            self.input_button ["state"] = "normal"
             window.destroy()
 
         def new_entry():
@@ -227,8 +246,7 @@ class recommend:
                 i = i+1
             print(userGames)
         
-        
-
+       
         # TITLE
         lbl_0 = tk.Label(window, text="Game Recommendation Entry",
                         fg='black', font=("Helvetica", 8))
@@ -290,36 +308,36 @@ class recommend:
         variable = IntVar(window)
         variable.set(options[numOfGames-1]) # default value
         w = OptionMenu(window, variable,*options, command=display_selected)
-        w.config(width=10)
+        w.config(width=5)
         w.pack() 
-        
+      
+        def on_closing():
+            self.input_button ["state"] = "normal"
+            window.destroy()
+
+        window.protocol("WM_DELETE_WINDOW", on_closing)
         window.mainloop()
         #######################################################################################
 
     def display_xls_file(self):
-        try:
-            self.file_name = pathlib.Path(
-                r'././data/output_data/content_based_recommender_MARKoutput_genre.csv')
+        global numOfGames
+        global gamesLbl
+       
+        # Deleting the game labels
+        for i in range(len(gamesLbl)):
+            gamesLbl[i].destroy()
 
-            df = pd.read_csv(self.file_name)
-
-            if (len(df) == 0):
-                msg.showinfo('No records', 'No records')
-            else:
-                pass
-
-            # Now display the DF in 'Table' object
-            # under'pandastable' module
-            self.f2 = Frame(self.root, height=200, width=300)
-            self.f2.pack(fill=BOTH, expand=1)
-
-            self.table = Table(self.f2, dataframe=df, read_only=True)
-
-            self.table.show()
-
-        except FileNotFoundError as e:
-            print(e)
-            msg.showerror('Error in opening file', e)
+        # Reinitialized the list
+        gamesLbl = []
+        
+        # For printin the recommenedGames
+        for i in range(len(recommendedGames)):
+                # LABELS
+                lbl_1 = tk.Label(root, text=recommendedGames[i],
+                                fg='black', font=("Helvetica", 8))
+                lbl_1.place(x=50, y=75 + i * 25)
+                gamesLbl.append(lbl_1)
+            
 
 
 #######################################################################################
