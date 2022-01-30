@@ -1,2 +1,0 @@
-# DA-Project
-Game Recommender
