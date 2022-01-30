@@ -1,3 +1,7 @@
+from re import T
+from turtle import ycor
+from matplotlib.pyplot import text
+from matplotlib.style import use
 import pandas as pd
 from tkinter import *
 from tkinter import filedialog
@@ -17,6 +21,12 @@ import time
 
 
 userGames = [0, 0, 0, 0, 0]
+numOfGames = 1
+userInput1 = []
+userInput = []
+recommendedGames = []
+gamesLbl = []
+y = 0
 
 
 class recommend:
@@ -25,40 +35,41 @@ class recommend:
 
         self.root = root
         self.file_name = ''
-        self.f = Frame(self.root,
-                       height=200,
-                       width=300)
+        self.f = Frame(self.root.configure(background='#f1c95e'),
+                       height=1500,
+                       width=1500,
+                       bg="#f1c95e")
 
         # Place the frame on root window
         self.f.pack()
 
         # Creating label widgets
         self.message_label = Label(self.f,
-                                   text='Game Recommender',
-                                   font=('Arial', 19, 'underline'),
-                                   fg='Green')
+                                   text='\n\nGame Recommender',
+                                   font=('Fixedsys', 22),
+                                   fg='#051544', bg="#f1c95e")
         self.message_label2 = Label(self.f,
                                     text='Steam Games Version',
-                                    font=('Arial', 14, 'underline'),
-                                    fg='Red')
+                                    font=('Fixedsys', 16),
+                                    fg='#2a5e60', bg="#f1c95e")
 
         # Buttons
         self.input_button = Button(self.f,
                                    text='Input',
-                                   font=('Arial', 14),
-                                   bg='Orange',
+                                   font=('MS Sans Serif', 12),
+                                   bg='#eaae50',
                                    fg='Black',
                                    command=self.user_input)
         self.display_button = Button(self.f,
                                      text='Display',
-                                     font=('Arial', 14),
-                                     bg='Green',
+                                     font=('MS Sans Serif', 12),
+                                     bg='#529490',
                                      fg='Black',
                                      command=self.display_xls_file)
         self.exit_button = Button(self.f,
                                   text='Exit',
-                                  font=('Arial', 14),
-                                  bg='Red',
+                                  font=('MS Sans Serif', 12),
+                                  bg='#b0d7d1',
                                   fg='Black',
                                   command=root.destroy)
 
@@ -69,24 +80,21 @@ class recommend:
                                padx=0, pady=15)
         # self.convert_button.grid(row=3, column=1,
         #                          padx=0, pady=15)
-        self.display_button.grid(row=3, column=2,
+        self.display_button.grid(row=3, column=1,
                                  padx=10, pady=15)
         self.exit_button.grid(row=3, column=3,
                               padx=10, pady=15)
     #######################################################################################
 
     def user_input(self):
-        userGames.clear()
+        self.input_button["state"] = "disabled"
+        global userInput1
+        global userInput
+        global numOfGames
+        global y
+        numOfGames = 1
         userInput = []
-
-        def close_window():
-            window.destroy()
-
-        def new_entry():
-            i = 0
-            for games in userInput:
-                userGames.insert(i, games.get())
-                i = i+1
+        userInput1 = []
 
         def recommend_csv():
 
@@ -97,15 +105,15 @@ class recommend:
             #     r'././data/intermediate_data/processed_games_for_content-based.csv')
             # dataGames = read_csv(locationGamesFile)
             locationGamesFile = pathlib.Path(
-                r'././data/intermediate_data/steam_games.csv')
+                r'././data/intermediate_data/processed_games_for_content-based.csv')
             dataGames = read_csv(locationGamesFile)
-
+            # steam_games
             # Get users data from CSV
             # locationUsersFile = pathlib.Path(
             #     r'././data/model_data/steam_user_train.csv')   # data/purchase_play
-            locationUsersFile = pathlib.Path(
-                r'././data/model_data/testing2.csv')
-            dataUsers = read_csv(locationUsersFile)
+            # locationUsersFile = pathlib.Path(
+            #     r'././data/model_data/testing2.csv')
+            # dataUsers = read_csv(locationUsersFile)
 
             # get review info from csv
             locationReviewFile = pathlib.Path(
@@ -114,9 +122,10 @@ class recommend:
                 "name", "percentage_positive_review"],)
 
             # Construct a reverse map of indices and game names
+            dataGames['name'] = dataGames['name'].str.lower()
+            dataReviews['name'] = dataReviews['name'].str.lower()
             indices = Series(
                 dataGames.index, index=dataGames['name']).drop_duplicates()
-
             # get list of games we have info about
             listGames = dataGames['name'].unique()
 
@@ -128,19 +137,20 @@ class recommend:
             # Function that takes in game name and Cosine Similarity matrix as input and outputs most similar games
 
             def get_recommendations(title, cosine_sim):
-
                 if title not in listGames:
-                    return []
+                    return []  # for blank
 
                 # Get the index of the game that matches the name
                 idx = indices[title]
 
                 # if there's 2 games or more with same name (game RUSH)
                 if type(idx) is Series:
-                    return []
+                    return []  # for duplicate
 
                 # Get the pairwise similarity scores of all games with that game
                 sim_scores = list(enumerate(cosine_sim[idx]))
+
+                # print(sim_scores)  # VECTOR DATA OF ALL GAMES IN THE CSV
 
                 # Sort the games based on the similarity scores
                 sim_scores = sorted(
@@ -148,7 +158,11 @@ class recommend:
 
                 # Get the scores of the most similar games
                 # (not the first one because this games as a score of 1 (perfect score) similarity with itself)
-                sim_scores = sim_scores[1:n_recommendation + 1]
+                x = int(n_recommendation/len(userGames))
+
+                sim_scores = sim_scores[1:x + 1]
+
+                print(sim_scores)  # VECTOR DATA OF N RECOMMENDATIONS
 
                 # Get the games indices
                 movie_indices = [i[0] for i in sim_scores]
@@ -170,6 +184,13 @@ class recommend:
                 recommendation_reviews = recommendation_reviews.sort_values(
                     by="percentage_positive_review", ascending=False)
 
+                global recommendedGames
+                recommendedGames = []
+                i = 0
+                for games in recommendation_reviews["name"]:
+                    recommendedGames.insert(i, games)
+                    i = i+1
+
                 if len(recommendation_reviews.index) < n_recommendation:
                     return DataFrame(data=[[user_id] + recommendation_reviews["name"].tolist() +
                                            [""] * (n_recommendation - len(recommendation_reviews.index))],
@@ -180,6 +201,7 @@ class recommend:
             #######################################################################################
 
             def generate_recommendation_output(column_name, location_output_file):
+                global y
                 recommendationByUserData = DataFrame(columns=col_names)
 
                 # need to do some modification on data to make sure there is no NaN in column
@@ -196,11 +218,8 @@ class recommend:
 
                 # loop on all row and get recommendations for user
                 for game in userGames:
-
-                    listSuggestion = list()
                     listSuggestion.extend(get_recommendations(
                         game, cosine_sim_matrix))
-
                 # add the last element for the last user
                 recommendationByUserData = concat([recommendationByUserData,
                                                    make_recommendation_for_user(previousId, listSuggestion, userGames)],
@@ -210,71 +229,145 @@ class recommend:
                     location_output_file, index=False)
 
             generate_recommendation_output('genre',
-                                           pathlib.Path(r'././data/output_data/content_based_recommender_MARKoutput_genre.csv'))
+                                           pathlib.Path(r'././data/output_data/content_based_recommender_output_genre.csv'))
+
             msg.showinfo('HELLO!', 'Recommendations Processed')
+
+            self.input_button["state"] = "normal"
             window.destroy()
         #######################################################################################
 
         #  New window for input
-        window = tk.Tk()
+        window = Tk()
         window.title('Game Recommendation Window')
         window.geometry("1000x500")
+        window.configure(bg='#FFF89A')
+
+        userGames.clear()
+
+        def close_window():
+            self.input_button["state"] = "normal"
+            window.destroy()
+
+        def new_entry():
+            global userInput1
+            global y
+            global userInput
+            y = 0
+            i = 0
+            for games in userInput:
+                userGames.insert(i, games.get())
+                # Check for Blank Input
+                if len(userGames[i]) == 0:
+                    y = y+1
+                if not userGames[i].strip():
+                    y = y+1
+                userGames[i] = userGames[i].lower()
+                i = i+1
+            # if y > 0 or len(userGames) != len(set(userGames)):  # Check for Duplicate
+            if y > 0:
+                msg.showinfo(
+                    title='HELLO!', message="You entered an invalid input! Please input again")
+                window.destroy()
+            self.input_button["state"] = "normal"
 
         # TITLE
         lbl_0 = tk.Label(window, text="Game Recommendation Entry",
-                         fg='black', font=("Helvetica", 8))
-        lbl_0.place(x=200, y=15)
+                         fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+        lbl_0.place(x=100, y=10)
 
-        # EXIT BUTTON
-        btn_exit = tk.Button(window, text="Exit",
-                             fg='black', command=close_window)
-        btn_exit.place(x=800, y=400)
-
-        for i in range(5):
-            lbl_1 = tk.Label(window, text="Game Name",
-                             fg='black', font=("Helvetica", 8))
-            lbl_1.place(x=50, y=75 + i * 25)
-
-            txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
-            txtfld_1.place(x=250, y=75 + i * 25)
-            userInput.append(txtfld_1)
         # SAVE BUTTON
         btn = tk.Button(window, text="Save Entry",
-                        fg='black', command=new_entry)
-        btn.place(x=400, y=400)
+                        font=('System', 10),
+                        fg='black', command=new_entry, bg='#9DDFD3', width=10)
+        btn.place(x=500, y=200)
 
         # RECOMMEND BUTTON
         btn_recommend = tk.Button(window, text="Recommend",
-                                  fg='black', command=recommend_csv)
-        btn_recommend.place(x=200, y=400)
+                                  font=('System', 10),
+                                  fg='black', command=recommend_csv, bg='#DBF6E9', width=10)
+        btn_recommend.place(x=625, y=200)
 
+        # EXIT BUTTON
+        btn_exit = tk.Button(window, text="Exit",
+                             font=('System', 10),
+                             fg='black', command=close_window, bg='#FFC93C', width=10)
+        btn_exit.place(x=750, y=200)
+
+        # OPTION MENU
+
+        def display_selected(choice):
+            global numOfGames
+            global userInput1
+            global userInput
+            numOfGames = variable.get()
+            # Detele labes and text fields in the window
+            for i in range(len(userInput)):
+                userInput[i].destroy()
+                userInput1[i].destroy()
+
+            # Reinitialized the list
+            userInput = []
+            userInput1 = []
+            for i in range(numOfGames):
+                # LABELS
+                lbl_1 = tk.Label(window, text="Game Name",
+                                 fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+                lbl_1.place(x=100, y=80 + (i*1.5) * 25)
+                userInput1.append(lbl_1)
+                # TEXT FIELDS
+                txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
+                txtfld_1.place(x=250, y=78 + (i*1.5) * 25)
+
+                userInput.append(txtfld_1)
+
+        # For first run, initialize 1 label and textfield
+        lbl_1 = tk.Label(window, text="Game Name",
+                         fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+        lbl_1.place(x=100, y=80)
+        userInput1.append(lbl_1)
+        txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
+        txtfld_1.place(x=250, y=78)
+
+        userInput.append(txtfld_1)
+
+        # Option Menu
+        options = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        variable = IntVar(window)
+        variable.set(options[numOfGames-1])  # default value
+        w = OptionMenu(window, variable, *options, command=display_selected)
+        w.config(width=10, bg='#95D1CC', font=('MS Sans Serif', 12))
+        w.pack()
+
+        def on_closing():
+            self.input_button["state"] = "normal"
+            window.destroy()
+
+        window.protocol("WM_DELETE_WINDOW", on_closing)
         window.mainloop()
         #######################################################################################
 
     def display_xls_file(self):
-        try:
-            self.file_name = pathlib.Path(
-                r'././data/output_data/content_based_recommender_MARKoutput_genre.csv')
+        global numOfGames
+        global gamesLbl
 
-            df = pd.read_csv(self.file_name)
+        # Deleting the game labels
+        for i in range(len(gamesLbl)):
+            gamesLbl[i].destroy()
 
-            if (len(df) == 0):
-                msg.showinfo('No records', 'No records')
-            else:
-                pass
+        # Reinitialized the list
+        gamesLbl = []
 
-            # Now display the DF in 'Table' object
-            # under'pandastable' module
-            self.f2 = Frame(self.root, height=200, width=300)
-            self.f2.pack(fill=BOTH, expand=1)
-
-            self.table = Table(self.f2, dataframe=df, read_only=True)
-
-            self.table.show()
-
-        except FileNotFoundError as e:
-            print(e)
-            msg.showerror('Error in opening file', e)
+        # For printin the recommenedGames
+        lbl_1 = tk.Label(root, text="Games Recommended:",
+                         fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+        lbl_1.place(x=200, y=175)
+        for i in range(len(recommendedGames)):
+            # LABELS
+            lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i]),
+                             fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+            lbl_1.place(x=200, y=225 + (i*1.5) * 25)
+            gamesLbl.append(lbl_1)
 
 
 #######################################################################################
