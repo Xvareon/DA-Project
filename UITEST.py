@@ -1,6 +1,7 @@
 from re import T
 from turtle import ycor
 from matplotlib.pyplot import text
+from matplotlib.style import use
 import pandas as pd
 from tkinter import *
 from tkinter import filedialog
@@ -94,7 +95,6 @@ class recommend:
         numOfGames = 1
         userInput = []
         userInput1 = []
-        y = 0
 
         def recommend_csv():
 
@@ -122,9 +122,10 @@ class recommend:
                 "name", "percentage_positive_review"],)
 
             # Construct a reverse map of indices and game names
+            dataGames['name'] = dataGames['name'].str.lower()
+            dataReviews['name'] = dataReviews['name'].str.lower()
             indices = Series(
                 dataGames.index, index=dataGames['name']).drop_duplicates()
-
             # get list of games we have info about
             listGames = dataGames['name'].unique()
 
@@ -136,9 +137,7 @@ class recommend:
             # Function that takes in game name and Cosine Similarity matrix as input and outputs most similar games
 
             def get_recommendations(title, cosine_sim):
-                global y
                 if title not in listGames:
-                    y = y+1
                     return []  # for blank
 
                 # Get the index of the game that matches the name
@@ -146,7 +145,6 @@ class recommend:
 
                 # if there's 2 games or more with same name (game RUSH)
                 if type(idx) is Series:
-                    y = y+1
                     return []  # for duplicate
 
                 # Get the pairwise similarity scores of all games with that game
@@ -159,9 +157,8 @@ class recommend:
                 # Get the scores of the most similar games
                 # (not the first one because this games as a score of 1 (perfect score) similarity with itself)
                 x = int(n_recommendation/len(userGames))
-                y = y + x
 
-                sim_scores = sim_scores[1:y + 1]
+                sim_scores = sim_scores[1:x + 1]
 
                 # Get the games indices
                 movie_indices = [i[0] for i in sim_scores]
@@ -189,8 +186,6 @@ class recommend:
                 for games in recommendation_reviews["name"]:
                     recommendedGames.insert(i, games)
                     i = i+1
-                print(recommendation_reviews["name"])
-                print(recommendedGames)
 
                 if len(recommendation_reviews.index) < n_recommendation:
                     return DataFrame(data=[[user_id] + recommendation_reviews["name"].tolist() +
@@ -202,6 +197,7 @@ class recommend:
             #######################################################################################
 
             def generate_recommendation_output(column_name, location_output_file):
+                global y
                 recommendationByUserData = DataFrame(columns=col_names)
 
                 # need to do some modification on data to make sure there is no NaN in column
@@ -220,7 +216,6 @@ class recommend:
                 for game in userGames:
                     listSuggestion.extend(get_recommendations(
                         game, cosine_sim_matrix))
-
                 # add the last element for the last user
                 recommendationByUserData = concat([recommendationByUserData,
                                                    make_recommendation_for_user(previousId, listSuggestion, userGames)],
@@ -231,7 +226,9 @@ class recommend:
 
             generate_recommendation_output('genre',
                                            pathlib.Path(r'././data/output_data/content_based_recommender_MARKoutput_genre.csv'))
+
             msg.showinfo('HELLO!', 'Recommendations Processed')
+
             self.input_button["state"] = "normal"
             window.destroy()
         #######################################################################################
@@ -250,17 +247,25 @@ class recommend:
 
         def new_entry():
             global userInput1
+            global y
             global userInput
+            y = 0
             i = 0
-            print(len(userInput))
             for games in userInput:
                 userGames.insert(i, games.get())
+                if len(userGames[i]) == 0:  # Check for Blank Input
+                    y = y+1
+                userGames[i] = userGames[i].lower()
                 i = i+1
-            print(userGames)
+            if y > 0 or len(userGames) != len(set(userGames)):  # Check for Duplicate
+                msg.showinfo(
+                    title='HELLO!', message="You entered an invalid input! Please input again")
+                window.destroy()
+            self.input_button["state"] = "normal"
 
         # TITLE
-        lbl_0 = tk.Label( window, text="Game Recommendation Entry",
-                        fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+        lbl_0 = tk.Label(window, text="Game Recommendation Entry (Space Sensitive)",
+                         fg='black', font=('Fixedsys', 16), bg='#FFF89A')
         lbl_0.place(x=100, y=10)
 
         # SAVE BUTTON
@@ -300,21 +305,23 @@ class recommend:
             for i in range(numOfGames):
                 # LABELS
                 lbl_1 = tk.Label(window, text="Game Name",
-                                    fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+                                 fg='black', font=('Fixedsys', 16), bg='#FFF89A')
                 lbl_1.place(x=100, y=80 + (i*1.5) * 25)
                 userInput1.append(lbl_1)
                 # TEXT FIELDS
                 txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
                 txtfld_1.place(x=250, y=78 + (i*1.5) * 25)
+
                 userInput.append(txtfld_1)
 
         # For first run, initialize 1 label and textfield
         lbl_1 = tk.Label(window, text="Game Name",
-                                    fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+                         fg='black', font=('Fixedsys', 16), bg='#FFF89A')
         lbl_1.place(x=100, y=80)
         userInput1.append(lbl_1)
         txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
         txtfld_1.place(x=250, y=78)
+
         userInput.append(txtfld_1)
 
         # Option Menu
@@ -322,7 +329,7 @@ class recommend:
         variable = IntVar(window)
         variable.set(options[numOfGames-1])  # default value
         w = OptionMenu(window, variable, *options, command=display_selected)
-        w.config(width=10,bg='#95D1CC', font=('MS Sans Serif', 12))
+        w.config(width=10, bg='#95D1CC', font=('MS Sans Serif', 12))
         w.pack()
 
         def on_closing():
@@ -348,9 +355,10 @@ class recommend:
         for i in range(len(recommendedGames)):
             # LABELS
             lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i]),
-                              fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+                             fg='black', font=('Fixedsys', 16), bg='#FFF89A')
             lbl_1.place(x=200, y=225 + (i*1.5) * 25)
             gamesLbl.append(lbl_1)
+
 
 #######################################################################################
 # Driver Code
