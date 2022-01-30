@@ -26,9 +26,7 @@ userInput1 = []
 userInput = []
 recommendedGames = []
 gamesLbl = []
-y = 0
-
-
+listGames = []
 class recommend:
 
     def __init__(self, root):
@@ -85,28 +83,31 @@ class recommend:
         self.exit_button.grid(row=3, column=3,
                               padx=10, pady=15)
     #######################################################################################
-
+    
     def user_input(self):
         self.input_button["state"] = "disabled"
         global userInput1
         global userInput
         global numOfGames
         global y
+        global listGames
         numOfGames = 1
         userInput = []
         userInput1 = []
-
+        locationGamesFile = pathlib.Path(
+                r'././data/intermediate_data/processed_games_for_content-based.csv')
+        dataGames = read_csv(locationGamesFile)
+        dataGames['name'] = dataGames['name'].str.lower()
+        listGames = dataGames['name'].unique()
         def recommend_csv():
-
+            
             n_recommendation = 10
 
             # Get games data from CSV
             # locationGamesFile = pathlib.Path(
             #     r'././data/intermediate_data/processed_games_for_content-based.csv')
             # dataGames = read_csv(locationGamesFile)
-            locationGamesFile = pathlib.Path(
-                r'././data/intermediate_data/processed_games_for_content-based.csv')
-            dataGames = read_csv(locationGamesFile)
+            
             # steam_games
             # Get users data from CSV
             # locationUsersFile = pathlib.Path(
@@ -122,13 +123,15 @@ class recommend:
                 "name", "percentage_positive_review"],)
 
             # Construct a reverse map of indices and game names
-            dataGames['name'] = dataGames['name'].str.lower()
+            
             dataReviews['name'] = dataReviews['name'].str.lower()
             indices = Series(
                 dataGames.index, index=dataGames['name']).drop_duplicates()
             # get list of games we have info about
-            listGames = dataGames['name'].unique()
-
+            
+            
+            print(listGames)
+          
             # create dataframe for recommendations
             col_names = list(map(str, range(1, n_recommendation + 1)))
             col_names = ["user_id"] + col_names
@@ -247,24 +250,27 @@ class recommend:
 
         def new_entry():
             global userInput1
-            global y
             global userInput
-            y = 0
+            global listGames
             i = 0
+            
             for games in userInput:
-                userGames.insert(i, games.get())
-                if len(userGames[i]) == 0:  # Check for Blank Input
-                    y = y+1
-                userGames[i] = userGames[i].lower()
-                i = i+1
-            if y > 0 or len(userGames) != len(set(userGames)):  # Check for Duplicate
-                msg.showinfo(
+                    # Check if it is in our csv || Check for duplicates
+                if games.get() not in listGames or games.get() in userGames:  
+                    msg.showinfo(
                     title='HELLO!', message="You entered an invalid input! Please input again")
-                window.destroy()
-            self.input_button["state"] = "normal"
+                    window.destroy()
+                    self.input_button["state"] = "normal"
+                else :
+                    userGames.insert(i, games.get())
+                    userGames[i] = userGames[i].lower()
+                    i = i+1
+            print (userGames)
+            btn_recommend["state"] = "normal"
+            
 
         # TITLE
-        lbl_0 = tk.Label(window, text="Game Recommendation Entry (Space Sensitive)",
+        lbl_0 = tk.Label(window, text="Game Recommendation Entry \n(Space Sensitive)",
                          fg='black', font=('Fixedsys', 16), bg='#FFF89A')
         lbl_0.place(x=100, y=10)
 
@@ -279,7 +285,7 @@ class recommend:
                                   font=('System', 10),
                                   fg='black', command=recommend_csv, bg='#DBF6E9', width=10)
         btn_recommend.place(x=625, y=200)
-
+        btn_recommend["state"] = "disabled"
         # EXIT BUTTON
         btn_exit = tk.Button(window, text="Exit",
                              font=('System', 10),
@@ -292,8 +298,9 @@ class recommend:
             global numOfGames
             global userInput1
             global userInput
+            global userGames
             numOfGames = variable.get()
-
+            btn_recommend["state"] = "disabled"
             # Detele labes and text fields in the window
             for i in range(len(userInput)):
                 userInput[i].destroy()
@@ -302,6 +309,7 @@ class recommend:
             # Reinitialized the list
             userInput = []
             userInput1 = []
+            userGames = []
             for i in range(numOfGames):
                 # LABELS
                 lbl_1 = tk.Label(window, text="Game Name",
@@ -354,7 +362,7 @@ class recommend:
         # For printin the recommenedGames
         for i in range(len(recommendedGames)):
             # LABELS
-            lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i]),
+            lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i].upper()),
                              fg='black', font=('Fixedsys', 16), bg='#FFF89A')
             lbl_1.place(x=200, y=225 + (i*1.5) * 25)
             gamesLbl.append(lbl_1)
