@@ -150,6 +150,8 @@ class recommend:
                 # Get the pairwise similarity scores of all games with that game
                 sim_scores = list(enumerate(cosine_sim[idx]))
 
+                # print(sim_scores)  # VECTOR DATA OF ALL GAMES IN THE CSV
+
                 # Sort the games based on the similarity scores
                 sim_scores = sorted(
                     sim_scores, key=lambda x: x[1], reverse=True)
@@ -159,6 +161,8 @@ class recommend:
                 x = int(n_recommendation/len(userGames))
 
                 sim_scores = sim_scores[1:x + 1]
+
+                print(sim_scores)  # VECTOR DATA OF N RECOMMENDATIONS
 
                 # Get the games indices
                 movie_indices = [i[0] for i in sim_scores]
@@ -225,7 +229,7 @@ class recommend:
                     location_output_file, index=False)
 
             generate_recommendation_output('genre',
-                                           pathlib.Path(r'././data/output_data/content_based_recommender_MARKoutput_genre.csv'))
+                                           pathlib.Path(r'././data/output_data/content_based_recommender_output_genre.csv'))
 
             msg.showinfo('HELLO!', 'Recommendations Processed')
 
@@ -253,18 +257,22 @@ class recommend:
             i = 0
             for games in userInput:
                 userGames.insert(i, games.get())
-                if len(userGames[i]) == 0:  # Check for Blank Input
+                # Check for Blank Input
+                if len(userGames[i]) == 0:
+                    y = y+1
+                if not userGames[i].strip():
                     y = y+1
                 userGames[i] = userGames[i].lower()
                 i = i+1
-            if y > 0 or len(userGames) != len(set(userGames)):  # Check for Duplicate
+            # if y > 0 or len(userGames) != len(set(userGames)):  # Check for Duplicate
+            if y > 0:
                 msg.showinfo(
                     title='HELLO!', message="You entered an invalid input! Please input again")
                 window.destroy()
             self.input_button["state"] = "normal"
 
         # TITLE
-        lbl_0 = tk.Label(window, text="Game Recommendation Entry (Space Sensitive)",
+        lbl_0 = tk.Label(window, text="Game Recommendation Entry",
                          fg='black', font=('Fixedsys', 16), bg='#FFF89A')
         lbl_0.place(x=100, y=10)
 
@@ -293,7 +301,6 @@ class recommend:
             global userInput1
             global userInput
             numOfGames = variable.get()
-
             # Detele labes and text fields in the window
             for i in range(len(userInput)):
                 userInput[i].destroy()
@@ -352,6 +359,9 @@ class recommend:
         gamesLbl = []
 
         # For printin the recommenedGames
+        lbl_1 = tk.Label(root, text="Games Recommended:",
+                         fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+        lbl_1.place(x=200, y=175)
         for i in range(len(recommendedGames)):
             # LABELS
             lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i]),
