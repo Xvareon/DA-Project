@@ -1,5 +1,6 @@
 from re import T
 from turtle import ycor
+from matplotlib.pyplot import text
 import pandas as pd
 from tkinter import *
 from tkinter import filedialog
@@ -33,40 +34,41 @@ class recommend:
 
         self.root = root
         self.file_name = ''
-        self.f = Frame(self.root,
-                       height=200,
-                       width=300)
+        self.f = Frame(self.root.configure(background='#f1c95e'),
+                       height=1500,
+                       width=1500,
+                       bg="#f1c95e")
 
         # Place the frame on root window
         self.f.pack()
 
         # Creating label widgets
         self.message_label = Label(self.f,
-                                   text='Game Recommender',
-                                   font=('Arial', 19, 'underline'),
-                                   fg='Green')
+                                   text='\n\nGame Recommender',
+                                   font=('Fixedsys', 22),
+                                   fg='#051544', bg="#f1c95e")
         self.message_label2 = Label(self.f,
                                     text='Steam Games Version',
-                                    font=('Arial', 14, 'underline'),
-                                    fg='Red')
+                                    font=('Fixedsys', 16),
+                                    fg='#2a5e60', bg="#f1c95e")
 
         # Buttons
         self.input_button = Button(self.f,
                                    text='Input',
-                                   font=('Arial', 14),
-                                   bg='Orange',
+                                   font=('MS Sans Serif', 12),
+                                   bg='#eaae50',
                                    fg='Black',
                                    command=self.user_input)
         self.display_button = Button(self.f,
                                      text='Display',
-                                     font=('Arial', 14),
-                                     bg='Green',
+                                     font=('MS Sans Serif', 12),
+                                     bg='#529490',
                                      fg='Black',
                                      command=self.display_xls_file)
         self.exit_button = Button(self.f,
                                   text='Exit',
-                                  font=('Arial', 14),
-                                  bg='Red',
+                                  font=('MS Sans Serif', 12),
+                                  bg='#b0d7d1',
                                   fg='Black',
                                   command=root.destroy)
 
@@ -77,7 +79,7 @@ class recommend:
                                padx=0, pady=15)
         # self.convert_button.grid(row=3, column=1,
         #                          padx=0, pady=15)
-        self.display_button.grid(row=3, column=2,
+        self.display_button.grid(row=3, column=1,
                                  padx=10, pady=15)
         self.exit_button.grid(row=3, column=3,
                               padx=10, pady=15)
@@ -238,6 +240,7 @@ class recommend:
         window = Tk()
         window.title('Game Recommendation Window')
         window.geometry("1000x500")
+        window.configure(bg='#FFF89A')
 
         userGames.clear()
 
@@ -256,24 +259,27 @@ class recommend:
             print(userGames)
 
         # TITLE
-        lbl_0 = tk.Label(window, text="Game Recommendation Entry",
-                         fg='black', font=("Helvetica", 8))
-        lbl_0.place(x=200, y=15)
+        lbl_0 = tk.Label( window, text="Game Recommendation Entry",
+                        fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+        lbl_0.place(x=100, y=10)
 
         # SAVE BUTTON
         btn = tk.Button(window, text="Save Entry",
-                        fg='black', command=new_entry)
-        btn.place(x=400, y=400)
+                        font=('System', 10),
+                        fg='black', command=new_entry, bg='#9DDFD3', width=10)
+        btn.place(x=500, y=200)
 
         # RECOMMEND BUTTON
         btn_recommend = tk.Button(window, text="Recommend",
-                                  fg='black', command=recommend_csv)
-        btn_recommend.place(x=200, y=400)
+                                  font=('System', 10),
+                                  fg='black', command=recommend_csv, bg='#DBF6E9', width=10)
+        btn_recommend.place(x=625, y=200)
 
         # EXIT BUTTON
         btn_exit = tk.Button(window, text="Exit",
-                             fg='black', command=close_window)
-        btn_exit.place(x=800, y=400)
+                             font=('System', 10),
+                             fg='black', command=close_window, bg='#FFC93C', width=10)
+        btn_exit.place(x=750, y=200)
 
         # OPTION MENU
 
@@ -294,21 +300,21 @@ class recommend:
             for i in range(numOfGames):
                 # LABELS
                 lbl_1 = tk.Label(window, text="Game Name",
-                                 fg='black', font=("Helvetica", 8))
-                lbl_1.place(x=50, y=75 + i * 25)
+                                    fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+                lbl_1.place(x=100, y=80 + (i*1.5) * 25)
                 userInput1.append(lbl_1)
                 # TEXT FIELDS
                 txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
-                txtfld_1.place(x=250, y=75 + i * 25)
+                txtfld_1.place(x=250, y=78 + (i*1.5) * 25)
                 userInput.append(txtfld_1)
 
         # For first run, initialize 1 label and textfield
         lbl_1 = tk.Label(window, text="Game Name",
-                         fg='black', font=("Helvetica", 8))
-        lbl_1.place(x=50, y=75)
+                                    fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+        lbl_1.place(x=100, y=80)
         userInput1.append(lbl_1)
         txtfld_1 = tk.Entry(window, bg='white', fg='black', bd=5)
-        txtfld_1.place(x=250, y=75)
+        txtfld_1.place(x=250, y=78)
         userInput.append(txtfld_1)
 
         # Option Menu
@@ -316,7 +322,7 @@ class recommend:
         variable = IntVar(window)
         variable.set(options[numOfGames-1])  # default value
         w = OptionMenu(window, variable, *options, command=display_selected)
-        w.config(width=5)
+        w.config(width=10,bg='#95D1CC', font=('MS Sans Serif', 12))
         w.pack()
 
         def on_closing():
@@ -341,11 +347,10 @@ class recommend:
         # For printin the recommenedGames
         for i in range(len(recommendedGames)):
             # LABELS
-            lbl_1 = tk.Label(root, text=recommendedGames[i],
-                             fg='black', font=("Helvetica", 8))
-            lbl_1.place(x=50, y=75 + i * 25)
+            lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i]),
+                              fg='black', font=('Fixedsys', 16),bg='#FFF89A')
+            lbl_1.place(x=200, y=225 + (i*1.5) * 25)
             gamesLbl.append(lbl_1)
-
 
 #######################################################################################
 # Driver Code
