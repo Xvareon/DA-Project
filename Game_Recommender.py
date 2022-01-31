@@ -91,7 +91,7 @@ class recommend:
         # Load cosined data of games
         global cosined_data
         locationGamesFile = pathlib.Path(
-            r'././Rating/cosined_data.csv')
+            r'././OUTPUT/cosined_data.csv')
         cosined_data = np.genfromtxt(
             locationGamesFile, delimiter=",")  # CSV to NP ARRAY
     #######################################################################################
@@ -101,7 +101,6 @@ class recommend:
         global userInput1
         global userInput
         global numOfGames
-        global y
         global listGames
         numOfGames = 1
         userInput = []
@@ -109,7 +108,7 @@ class recommend:
 
         # Load steam games
         locationGamesFile = pathlib.Path(
-            r'././Rating/cleaned_data.csv')
+            r'././data/intermediate_data/steam_games5000.csv')
         dataGames = read_csv(locationGamesFile)
         dataGames['name'] = dataGames['name'].str.lower()
         listGames = dataGames['name'].unique()
@@ -205,7 +204,6 @@ class recommend:
             #######################################################################################
 
             def generate_recommendation_output():
-                global y
                 recommendationByUserData = DataFrame(columns=col_names)
 
                 previousId = ""
