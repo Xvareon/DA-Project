@@ -12,17 +12,19 @@ in_csv = './data/intermediate_data/steam_games5000.csv'
 dataGames = pd.read_csv(in_csv)
 
 # Lower all the string names
-dataGames['name'] = dataGames['name'].str.lower()
+# dataGames['name'] = dataGames['name'].str.lower()
 
 # Cosine computation
 dataGames['popular_tags'] = dataGames['popular_tags'].fillna('')
 count = CountVectorizer(stop_words='english')
-count_matrix = count.fit_transform(dataGames['popular_tags'])
-cosine_sim_matrix = cosine_similarity(
-    count_matrix, count_matrix)
 
-# Save the output
-np.savetxt("./OUTPUT/cosined_data.csv", cosine_sim_matrix, delimiter=",")
+count_matrix = count.fit_transform(dataGames['popular_tags'])
+print(count_matrix)
+# cosine_sim_matrix = cosine_similarity(
+#     count_matrix, count_matrix)
+
+# # Save the output
+# np.savetxt("./Rating/cosined_data_popular_tags.csv", cosine_sim_matrix, delimiter=",")
 # cosine_sim_matrix.to_csv(
 #       out_csv,
 #       index=False,

@@ -91,7 +91,7 @@ class recommend:
         # Load cosined data of games
         global cosined_data
         locationGamesFile = pathlib.Path(
-            r'././OUTPUT/cosined_data.csv')
+            r'././Rating/cosined_data.csv')
         cosined_data = np.genfromtxt(
             locationGamesFile, delimiter=",")  # CSV to NP ARRAY
     #######################################################################################
@@ -108,7 +108,7 @@ class recommend:
 
         # Load steam games
         locationGamesFile = pathlib.Path(
-            r'././data/intermediate_data/steam_games5000.csv')
+            r'././Rating/cleaned_data.csv')
         dataGames = read_csv(locationGamesFile)
         dataGames['name'] = dataGames['name'].str.lower()
         listGames = dataGames['name'].unique()
@@ -239,6 +239,11 @@ class recommend:
             self.input_button["state"] = "normal"
             window.destroy()
 
+        errorMessage = []
+        # lbl_1 = tk.Label(window, text="Input your games",
+        #                          fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+        # lbl_1.place(x=70, y=80 )
+        # errorMessage.append(lbl_1)
         def new_entry():
             global userInput1
             global userInput
@@ -246,19 +251,37 @@ class recommend:
             global userGames
             userGames = []
             i = 0
+            j=0
+
+            for i in range(len(errorMessage)):
+                errorMessage[i].destroy()
+            errorMessage.clear()
+
 
             for games in userInput:
-                # Check if it is in our csv || Check for duplicates
-                if games.get() not in listGames or games.get() in userGames:
-                    msg.showinfo(
-                        title='HELLO!', message="You entered an invalid input! Please input again")
-                    window.destroy()
-                    self.input_button["state"] = "normal"
+                # Check if it is in our csv 
+                if games.get() not in listGames:
+                    lbl_1 = tk.Label(window, text="*Invalid",
+                                 fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+                    lbl_1.place(x=400, y=80 + (j*1.5) * 25)
+                    errorMessage.append(lbl_1)
+
+                # Check for duplicates
+                elif games.get() in userGames:
+                    lbl_1 = tk.Label(window, text="*Duplicate game input",
+                                 fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+                    lbl_1.place(x=400, y=80 + (j*1.5) * 25)
+                    errorMessage.append(lbl_1)
+
+                # Inserts the valid game
                 else:
-                    userGames.insert(i, games.get())
-                    userGames[i] = userGames[i].lower()
+                    userGames.insert(i, games.get().lower())
                     i = i+1
-            btn_recommend["state"] = "normal"
+                j=j+1
+
+
+            if (i == j):
+                btn_recommend["state"] = "normal"
 
         # TITLE
         lbl_0 = tk.Label(window, text="Game Recommendation Entry \n(Space Sensitive)",
@@ -269,19 +292,19 @@ class recommend:
         btn = tk.Button(window, text="Save Entry",
                         font=('System', 10),
                         fg='black', command=new_entry, bg='#9DDFD3', width=10)
-        btn.place(x=500, y=200)
+        btn.place(x=600, y=10)
 
         # RECOMMEND BUTTON
         btn_recommend = tk.Button(window, text="Recommend",
                                   font=('System', 10),
                                   fg='black', command=recommend_csv, bg='#DBF6E9', width=10)
-        btn_recommend.place(x=625, y=200)
+        btn_recommend.place(x=725, y=10)
         btn_recommend["state"] = "disabled"
         # EXIT BUTTON
         btn_exit = tk.Button(window, text="Exit",
                              font=('System', 10),
                              fg='black', command=close_window, bg='#FFC93C', width=10)
-        btn_exit.place(x=750, y=200)
+        btn_exit.place(x=850, y=10)
 
         # OPTION MENU
 
@@ -289,7 +312,7 @@ class recommend:
             global numOfGames
             global userInput1
             global userInput
-            global userGames
+       
             numOfGames = variable.get()
             btn_recommend["state"] = "disabled"
             # Detele labes and text fields in the window
@@ -297,10 +320,12 @@ class recommend:
                 userInput[i].destroy()
                 userInput1[i].destroy()
 
+            for i in range(len(errorMessage)):
+                errorMessage[i].destroy()
             # Reinitialized the list
             userInput = []
             userInput1 = []
-            userGames = []
+ 
             for i in range(numOfGames):
                 # LABELS
                 lbl_1 = tk.Label(window, text="Game Name",
