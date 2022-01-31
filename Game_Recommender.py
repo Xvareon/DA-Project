@@ -243,6 +243,8 @@ class recommend:
             global userInput1
             global userInput
             global listGames
+            global userGames
+            userGames = []
             i = 0
 
             for games in userInput:

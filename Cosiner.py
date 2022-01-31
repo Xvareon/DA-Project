@@ -15,9 +15,9 @@ dataGames = pd.read_csv(in_csv)
 dataGames['name'] = dataGames['name'].str.lower()
 
 # Cosine computation
-dataGames['genre'] = dataGames['genre'].fillna('')
+dataGames['popular_tags'] = dataGames['popular_tags'].fillna('')
 count = CountVectorizer(stop_words='english')
-count_matrix = count.fit_transform(dataGames['genre'])
+count_matrix = count.fit_transform(dataGames['popular_tags'])
 cosine_sim_matrix = cosine_similarity(
     count_matrix, count_matrix)
 
