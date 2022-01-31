@@ -3,6 +3,7 @@ from turtle import ycor
 from matplotlib.pyplot import text
 from matplotlib.style import use
 import pandas as pd
+import numpy as np
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox as msg
@@ -28,6 +29,7 @@ userInput = []
 recommendedGames = []
 gamesLbl = []
 listGames = []
+cosined_data = np.empty((0))
 
 
 class recommend:
@@ -85,6 +87,13 @@ class recommend:
                                  padx=10, pady=15)
         self.exit_button.grid(row=3, column=3,
                               padx=10, pady=15)
+
+        # Load cosined data of games
+        global cosined_data
+        locationGamesFile = pathlib.Path(
+            r'././Rating/cosined_data.csv')
+        cosined_data = np.genfromtxt(
+            locationGamesFile, delimiter=",")  # CSV to NP ARRAY
     #######################################################################################
 
     def user_input(self):
@@ -97,28 +106,16 @@ class recommend:
         numOfGames = 1
         userInput = []
         userInput1 = []
+
+        # Load steam games
         locationGamesFile = pathlib.Path(
-            r'././data/intermediate_data/processed_games_for_content-based.csv')
+            r'././Rating/cleaned_data.csv')
         dataGames = read_csv(locationGamesFile)
         dataGames['name'] = dataGames['name'].str.lower()
         listGames = dataGames['name'].unique()
 
         def recommend_csv():
-
             n_recommendation = 10
-
-            # Get games data from CSV
-            # locationGamesFile = pathlib.Path(
-            #     r'././data/intermediate_data/processed_games_for_content-based.csv')
-            # dataGames = read_csv(locationGamesFile)
-
-            # steam_games
-            # Get users data from CSV
-            # locationUsersFile = pathlib.Path(
-            #     r'././data/model_data/steam_user_train.csv')   # data/purchase_play
-            # locationUsersFile = pathlib.Path(
-            #     r'././data/model_data/testing2.csv')
-            # dataUsers = read_csv(locationUsersFile)
 
             # get review info from csv
             locationReviewFile = pathlib.Path(
@@ -133,16 +130,15 @@ class recommend:
                 dataGames.index, index=dataGames['name']).drop_duplicates()
             # get list of games we have info about
 
-            print(listGames)
-
             # create dataframe for recommendations
             col_names = list(map(str, range(1, n_recommendation + 1)))
             col_names = ["user_id"] + col_names
 
             #######################################################################################
             # Function that takes in game name and Cosine Similarity matrix as input and outputs most similar games
+            def get_recommendations(title):
+                global cosined_data
 
-            def get_recommendations(title, cosine_sim):
                 if title not in listGames:
                     return []  # for blank
 
@@ -154,9 +150,7 @@ class recommend:
                     return []  # for duplicate
 
                 # Get the pairwise similarity scores of all games with that game
-                sim_scores = list(enumerate(cosine_sim[idx]))
-
-                # print(sim_scores)  # VECTOR DATA OF ALL GAMES IN THE CSV
+                sim_scores = list(enumerate(cosined_data[idx]))
 
                 # Sort the games based on the similarity scores
                 sim_scores = sorted(
@@ -168,7 +162,7 @@ class recommend:
 
                 sim_scores = sim_scores[1:x + 1]
 
-                print(sim_scores)  # VECTOR DATA OF N RECOMMENDATIONS
+                # VECTOR DATA OF N RECOMMENDATIONS
 
                 df = pd.DataFrame(data={"vectors": sim_scores})
                 df.to_csv("./closest_vectors.csv",
@@ -210,17 +204,9 @@ class recommend:
                                      columns=col_names)
             #######################################################################################
 
-            def generate_recommendation_output(column_name, location_output_file):
+            def generate_recommendation_output():
                 global y
                 recommendationByUserData = DataFrame(columns=col_names)
-
-                # need to do some modification on data to make sure there is no NaN in column
-                dataGames[column_name] = dataGames[column_name].fillna('')
-                # Compute the Cosine Similarity matrix using the column
-                count = CountVectorizer(stop_words='english')
-                count_matrix = count.fit_transform(dataGames[column_name])
-                cosine_sim_matrix = cosine_similarity(
-                    count_matrix, count_matrix)
 
                 previousId = ""
                 listSuggestion = list()
@@ -228,18 +214,14 @@ class recommend:
 
                 # loop on all row and get recommendations for user
                 for game in userGames:
-                    listSuggestion.extend(get_recommendations(
-                        game, cosine_sim_matrix))
+                    listSuggestion.extend(get_recommendations(game))
+
                 # add the last element for the last user
                 recommendationByUserData = concat([recommendationByUserData,
                                                    make_recommendation_for_user(previousId, listSuggestion, userGames)],
                                                   ignore_index=True)
 
-                recommendationByUserData.to_csv(
-                    location_output_file, index=False)
-
-            generate_recommendation_output('genre',
-                                           pathlib.Path(r'././data/output_data/content_based_recommender_output_genre.csv'))
+            generate_recommendation_output()
 
             msg.showinfo('HELLO!', 'Recommendations Processed')
 
@@ -276,7 +258,6 @@ class recommend:
                     userGames.insert(i, games.get())
                     userGames[i] = userGames[i].lower()
                     i = i+1
-            print(userGames)
             btn_recommend["state"] = "normal"
 
         # TITLE
