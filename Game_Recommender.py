@@ -18,6 +18,7 @@ import xlsxwriter
 from openpyxl import *
 import tkinter as tk
 import time
+import csv
 
 
 userGames = [0, 0, 0, 0, 0]
@@ -27,6 +28,8 @@ userInput = []
 recommendedGames = []
 gamesLbl = []
 listGames = []
+
+
 class recommend:
 
     def __init__(self, root):
@@ -83,7 +86,7 @@ class recommend:
         self.exit_button.grid(row=3, column=3,
                               padx=10, pady=15)
     #######################################################################################
-    
+
     def user_input(self):
         self.input_button["state"] = "disabled"
         global userInput1
@@ -95,19 +98,20 @@ class recommend:
         userInput = []
         userInput1 = []
         locationGamesFile = pathlib.Path(
-                r'././data/intermediate_data/processed_games_for_content-based.csv')
+            r'././data/intermediate_data/processed_games_for_content-based.csv')
         dataGames = read_csv(locationGamesFile)
         dataGames['name'] = dataGames['name'].str.lower()
         listGames = dataGames['name'].unique()
+
         def recommend_csv():
-            
+
             n_recommendation = 10
 
             # Get games data from CSV
             # locationGamesFile = pathlib.Path(
             #     r'././data/intermediate_data/processed_games_for_content-based.csv')
             # dataGames = read_csv(locationGamesFile)
-            
+
             # steam_games
             # Get users data from CSV
             # locationUsersFile = pathlib.Path(
@@ -123,15 +127,14 @@ class recommend:
                 "name", "percentage_positive_review"],)
 
             # Construct a reverse map of indices and game names
-            
+
             dataReviews['name'] = dataReviews['name'].str.lower()
             indices = Series(
                 dataGames.index, index=dataGames['name']).drop_duplicates()
             # get list of games we have info about
-            
-            
+
             print(listGames)
-          
+
             # create dataframe for recommendations
             col_names = list(map(str, range(1, n_recommendation + 1)))
             col_names = ["user_id"] + col_names
@@ -166,6 +169,10 @@ class recommend:
                 sim_scores = sim_scores[1:x + 1]
 
                 print(sim_scores)  # VECTOR DATA OF N RECOMMENDATIONS
+
+                df = pd.DataFrame(data={"vectors": sim_scores})
+                df.to_csv("./closest_vectors.csv",
+                          sep=',', index=False)
 
                 # Get the games indices
                 movie_indices = [i[0] for i in sim_scores]
@@ -257,21 +264,20 @@ class recommend:
             global userInput
             global listGames
             i = 0
-            
+
             for games in userInput:
-                    # Check if it is in our csv || Check for duplicates
-                if games.get() not in listGames or games.get() in userGames:  
+                # Check if it is in our csv || Check for duplicates
+                if games.get() not in listGames or games.get() in userGames:
                     msg.showinfo(
-                    title='HELLO!', message="You entered an invalid input! Please input again")
+                        title='HELLO!', message="You entered an invalid input! Please input again")
                     window.destroy()
                     self.input_button["state"] = "normal"
-                else :
+                else:
                     userGames.insert(i, games.get())
                     userGames[i] = userGames[i].lower()
                     i = i+1
-            print (userGames)
+            print(userGames)
             btn_recommend["state"] = "normal"
-            
 
         # TITLE
         lbl_0 = tk.Label(window, text="Game Recommendation Entry \n(Space Sensitive)",
