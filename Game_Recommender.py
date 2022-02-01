@@ -29,6 +29,7 @@ userInput = []
 recommendedGames = []
 gamesLbl = []
 listGames = []
+listDesc = []
 cosined_data = np.empty((0))
 
 
@@ -137,6 +138,7 @@ class recommend:
             # Function that takes in game name and Cosine Similarity matrix as input and outputs most similar games
             def get_recommendations(title):
                 global cosined_data
+                global listDesc
 
                 if title not in listGames:
                     return []  # for blank
@@ -171,6 +173,13 @@ class recommend:
                 movie_indices = [i[0] for i in sim_scores]
 
                 # Return the top most similar games
+                dataGames['developer'] = (
+                    dataGames['developer'] + " " + dataGames['original_price'].astype(str))
+
+                listDesc = dataGames['developer'].iloc[movie_indices].tolist()
+
+                # print(dataGames['developer'].iloc[movie_indices])
+
                 return dataGames['name'].iloc[movie_indices].tolist()
             #######################################################################################
 
@@ -356,7 +365,7 @@ class recommend:
         lbl_1.place(x=200, y=175)
         for i in range(len(recommendedGames)):
             # LABELS
-            lbl_1 = tk.Label(root, text="{}.) {}".format(i+1, recommendedGames[i].upper()),
+            lbl_1 = tk.Label(root, text="{}.) {} - {}".format(i+1, recommendedGames[i].upper(), listDesc[i]),
                              fg='black', font=('Fixedsys', 16), bg='#FFF89A')
             lbl_1.place(x=200, y=225 + (i*1.5) * 25)
             gamesLbl.append(lbl_1)
