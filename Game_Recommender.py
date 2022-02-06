@@ -138,7 +138,6 @@ class recommend:
             # Function that takes in game name and Cosine Similarity matrix as input and outputs most similar games
             def get_recommendations(title):
                 global cosined_data
-                global listDesc
 
                 if title not in listGames:
                     return []  # for blank
@@ -172,18 +171,13 @@ class recommend:
                 # Get the games indices
                 movie_indices = [i[0] for i in sim_scores]
 
-                # Return the top most similar games
-                dataGames['developer'] = (
-                    dataGames['developer'] + " " + dataGames['original_price'].astype(str))
-
-                listDesc = dataGames['developer'].iloc[movie_indices].tolist()
-
                 # print(dataGames['developer'].iloc[movie_indices])
 
                 return dataGames['name'].iloc[movie_indices].tolist()
             #######################################################################################
 
             def make_recommendation_for_user(user_id, game_list, game_user_have):
+                global listDesc
                 if type(game_list) is not list or len(game_list) == 0:
                     # return empty one
                     return DataFrame(data=[[user_id] + [""] * n_recommendation], columns=col_names)
@@ -196,12 +190,19 @@ class recommend:
                 recommendation_reviews = recommendation_reviews.sort_values(
                     by="percentage_positive_review", ascending=False)
 
+                # Return the top most similar games
+                dataGames['developer'] = (
+                    dataGames['developer'] + " " + dataGames['original_price'].astype(str))
+
                 global recommendedGames
                 recommendedGames = []
+                idx = []
                 i = 0
                 for games in recommendation_reviews["name"]:
                     recommendedGames.insert(i, games)
+                    idx.append(indices[games])
                     i = i+1
+                listDesc = dataGames['developer'].iloc[idx].tolist()
 
                 if len(recommendation_reviews.index) < n_recommendation:
                     return DataFrame(data=[[user_id] + recommendation_reviews["name"].tolist() +
@@ -248,6 +249,8 @@ class recommend:
             self.input_button["state"] = "normal"
             window.destroy()
 
+        errorMessage = []
+
         def new_entry():
             global userInput1
             global userInput
@@ -255,19 +258,36 @@ class recommend:
             global userGames
             userGames = []
             i = 0
+            j = 0
+
+            for i in range(len(errorMessage)):
+                errorMessage[i].destroy()
+            errorMessage.clear()
 
             for games in userInput:
-                # Check if it is in our csv || Check for duplicates
-                if games.get() not in listGames or games.get() in userGames:
-                    msg.showinfo(
-                        title='HELLO!', message="You entered an invalid input! Please input again")
-                    window.destroy()
-                    self.input_button["state"] = "normal"
+                game = games.get().lower()
+                # Check if it is in our csv
+                if game not in listGames:
+                    lbl_1 = tk.Label(window, text="*Invalid",
+                                     fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+                    lbl_1.place(x=400, y=80 + (j*1.5) * 25)
+                    errorMessage.append(lbl_1)
+
+                # Check for duplicates
+                elif game in userGames:
+                    lbl_1 = tk.Label(window, text="*Duplicate game input",
+                                     fg='black', font=('Fixedsys', 16), bg='#FFF89A')
+                    lbl_1.place(x=400, y=80 + (j*1.5) * 25)
+                    errorMessage.append(lbl_1)
+
+                # Inserts the valid game
                 else:
-                    userGames.insert(i, games.get())
-                    userGames[i] = userGames[i].lower()
+                    userGames.insert(i, game)
                     i = i+1
-            btn_recommend["state"] = "normal"
+                j = j+1
+
+            if (i == j):
+                btn_recommend["state"] = "normal"
 
         # TITLE
         lbl_0 = tk.Label(window, text="Game Recommendation Entry \n(Space Sensitive)",
@@ -301,11 +321,13 @@ class recommend:
             global userGames
             numOfGames = variable.get()
             btn_recommend["state"] = "disabled"
-            # Detele labes and text fields in the window
+            # Delete labels and text fields in the window
             for i in range(len(userInput)):
                 userInput[i].destroy()
                 userInput1[i].destroy()
 
+            for i in range(len(errorMessage)):
+                errorMessage[i].destroy()
             # Reinitialized the list
             userInput = []
             userInput1 = []
@@ -363,6 +385,7 @@ class recommend:
         lbl_1 = tk.Label(root, text="Games Recommended:",
                          fg='black', font=('Fixedsys', 16), bg='#FFF89A')
         lbl_1.place(x=200, y=175)
+        print(recommendedGames)
         for i in range(len(recommendedGames)):
             # LABELS
             lbl_1 = tk.Label(root, text="{}.) {} - {}".format(i+1, recommendedGames[i].upper(), listDesc[i]),
