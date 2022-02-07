@@ -298,19 +298,19 @@ class recommend:
         btn = tk.Button(window, text="Save Entry",
                         font=('System', 10),
                         fg='black', command=new_entry, bg='#9DDFD3', width=10)
-        btn.place(x=500, y=200)
+        btn.place(x=600, y=10)
 
         # RECOMMEND BUTTON
         btn_recommend = tk.Button(window, text="Recommend",
                                   font=('System', 10),
                                   fg='black', command=recommend_csv, bg='#DBF6E9', width=10)
-        btn_recommend.place(x=625, y=200)
+        btn_recommend.place(x=725, y=10)
         btn_recommend["state"] = "disabled"
         # EXIT BUTTON
         btn_exit = tk.Button(window, text="Exit",
                              font=('System', 10),
                              fg='black', command=close_window, bg='#FFC93C', width=10)
-        btn_exit.place(x=750, y=200)
+        btn_exit.place(x=850, y=10)
 
         # OPTION MENU
 
@@ -361,6 +361,7 @@ class recommend:
         w = OptionMenu(window, variable, *options, command=display_selected)
         w.config(width=10, bg='#95D1CC', font=('MS Sans Serif', 12))
         w.pack()
+        w.place(x=400, y=10)
 
         def on_closing():
             self.input_button["state"] = "normal"
