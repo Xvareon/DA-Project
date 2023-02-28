@@ -18,6 +18,8 @@ dataGames['name'] = dataGames['name'].str.lower()
 dataGames['popular_tags'] = dataGames['popular_tags'].fillna('')
 count = CountVectorizer(stop_words='english')
 count_matrix = count.fit_transform(dataGames['popular_tags'])
+print(count_matrix)
+exit()
 cosine_sim_matrix = cosine_similarity(
     count_matrix, count_matrix)
 
